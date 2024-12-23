@@ -115,23 +115,45 @@ const createTarea = async (req, res = response) => {
 
 // Actualizar una tarea
 const updateTarea = async (req, res = response) => {
-  const { id } = req.params;
-  const { titulo, descripcion, fecha_limite, estado, id_usuario, id_proyecto } = req.body;
+  const { id } = req.params; // ID de la tarea a actualizar
+  const { titulo, descripcion, fecha_limite, estado, id_usuario, id_proyecto, usuarios } = req.body;
 
   try {
+    // Buscar la tarea por su ID
     const tarea = await Tarea.findByPk(id);
 
     if (!tarea) {
       return res.status(404).json({ error: 'Tarea no encontrada' });
     }
 
+    // Actualizar los datos de la tarea
     await tarea.update({ titulo, descripcion, fecha_limite, estado, id_usuario, id_proyecto });
-    res.json({ tarea });
+
+    if (usuarios && usuarios.length > 0) {
+      // Excluir al administrador (id_usuario = 1)
+      const usuariosFiltrados = usuarios.filter(id => id !== 1);
+
+      // Eliminar las relaciones existentes para esta tarea
+      await UsuarioTarea.destroy({ where: { id_tarea: id } });
+
+      // Asignar los nuevos usuarios a la tarea
+      await UsuarioTarea.bulkCreate(
+        usuariosFiltrados.map(id_usuario => ({ id_tarea: id, id_usuario }))
+      );
+    }
+
+    // Responder con la tarea actualizada
+    const tareaActualizada = await Tarea.findByPk(id, {
+      include: { model: Usuario, attributes: ['id_usuario', 'nombre_usuario'] }, // Incluir los usuarios asignados
+    });
+
+    res.json({ tarea: tareaActualizada });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al actualizar la tarea' });
   }
 };
+
 
 // Eliminar una tarea
 const deleteTarea = async (req, res = response) => {
