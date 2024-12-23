@@ -2,6 +2,7 @@
 const Proyecto = require('../proyecto/proyectoModel');
 const Tarea = require('../tarea/tareaModel');
 const Usuario = require('../usuario/usuarioModel');
+const UsuarioTarea = require('../usuarioTareaModel/usuarioTareaModel');
 
 // Relación de Proyecto con Usuario
 Proyecto.belongsTo(Usuario, { foreignKey: 'id_usuario' });
@@ -15,4 +16,7 @@ Tarea.belongsTo(Proyecto, { foreignKey: 'id_proyecto' });
 // Relación de Tarea con Usuario
 Tarea.belongsTo(Usuario, { foreignKey: 'id_usuario' });
 
-module.exports = { Proyecto, Tarea, Usuario };
+// Relación muchos a muchos entre Tarea y Usuario
+Tarea.belongsToMany(Usuario, { through: UsuarioTarea, foreignKey: 'id_tarea', otherKey: 'id_usuario' });
+Usuario.belongsToMany(Tarea, { through: UsuarioTarea, foreignKey: 'id_usuario', otherKey: 'id_tarea' });
+module.exports = { Proyecto, Tarea, Usuario,UsuarioTarea };

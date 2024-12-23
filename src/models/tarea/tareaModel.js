@@ -23,10 +23,6 @@ const Tarea = sequelize.define('Tarea', {
     type: DataTypes.ENUM('por_hacer', 'en_progreso', 'completada'),
     defaultValue: 'por_hacer',
   },
-  id_usuario: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
   id_proyecto: {
     type: DataTypes.INTEGER,
     allowNull: false,
